@@ -12,6 +12,7 @@ const char* mqttPassword = MQTT_PASSWD;
 
 #define trigPin 4
 #define echoPin 5
+#define relayPin 12
 
 long duration;
 int distance;
@@ -36,6 +37,8 @@ void setup() {
   measureTime = millis(); //serialdebug
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(relayPin, OUTPUT);
+  digitalWrite(relayPin, HIGH); // Power on devices needed for measurement
   
   /* //JSN SR04T */
   Serial.println("Starting measurrment"); //serialdebug
@@ -51,6 +54,7 @@ void setup() {
   
   // Read the echoPin. pulseIn() returns the duration (length of the pulse) in microseconds:
   duration = pulseIn(echoPin, HIGH);
+  digitalWrite(relayPin, LOW);
   
   // Calculate the distance:
   distance = duration*0.034/2;
