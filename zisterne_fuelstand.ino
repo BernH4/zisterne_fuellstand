@@ -16,7 +16,8 @@ const char* mqttPassword = MQTT_PASSWD;
 
 long duration;
 int distance;
-uint32_t measureTime, WiFiTime; //serialdebug
+uint32_t measureTime, WiFiTime;
+char payload[10];
 
 // Static IP details...Use static because it's much faster
 IPAddress ip(192, 168, 178, 199);
@@ -65,7 +66,7 @@ void setup() {
   Serial.println("Finished measurrement"); //serialdebug
  
  
-  WiFiTime=millis(); //serialdebug
+  WiFiTime=millis();
   /* WiFi.forceSleepWake(); */
   /* delay(1); */
   // Disable the WiFi persistence. 
@@ -78,7 +79,7 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(5);
     /* Serial.print("Connecting to WiFi..Code: "); //serialdebug */
-    Serial.print(WiFi.status()); //serialdebug
+    rial.print(WiFi.status()); //serialdebug
     if ((millis() - WiFiTime) > 5000) {
       Serial.println("Timout wifi connection, going to sleep.."); //serialdebug
       ESP.deepSleepInstant(10*1000000,WAKE_NO_RFCAL);
@@ -110,7 +111,9 @@ void setup() {
  
 
   Serial.println("now publishing..."); //serialdebug
-  client.publish("zisterne/fuelstand", String(distance).c_str());
+  /* client.publish("zisterne/fuelstand", String(distance).c_str()); */
+  sprintf(payload, "%d,%d", distance, millis()); //csv distance and runtime
+  client.publish("zisterne/fuelstand", payload);
   /* client.publish("zisterne/fuelstand", "test"); */
   delay(10);
   Serial.print("Full cycle time: "); //serialdebug
