@@ -13,11 +13,15 @@ const char* mqttPassword = MQTT_PASSWD;
 #define trigPin 4
 #define echoPin 5
 #define relayPin 12
+#define voltagePin A0
+
 
 long duration;
 int distance;
+int bat_raw;
+float analog_batt;
 uint32_t measureTime, WiFiTime;
-char payload[10];
+char payload[14];
 
 // Static IP details...Use static because it's much faster
 IPAddress ip(192, 168, 178, 200);
@@ -55,6 +59,10 @@ void setup() {
   
   // Read the echoPin. pulseIn() returns the duration (length of the pulse) in microseconds:
   duration = pulseIn(echoPin, HIGH);
+  bat_raw = analogRead(voltagePin);
+  analog_batt = (3.875/693) * bat_raw;
+  Serial.print("Battery Voltage: "); //serialdebug
+  Serial.println(analog_batt); //serialdebug
   digitalWrite(relayPin, LOW);
   
   // Calculate the distance:
@@ -113,7 +121,7 @@ void setup() {
 
   Serial.println("now publishing..."); //serialdebug
   /* client.publish("zisterne/fuelstand", String(distance).c_str()); */
-  sprintf(payload, "%d,%d", distance, millis()); //csv distance and runtime
+  sprintf(payload, "%d,%d,%f,%d", distance,bat_raw, analog_batt, millis()); //csv distance and runtime
   client.publish("zisterne/fuelstand", payload);
   /* client.publish("zisterne/fuelstand", "test"); */
   delay(10);
