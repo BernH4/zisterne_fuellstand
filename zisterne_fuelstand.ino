@@ -20,7 +20,7 @@ uint32_t measureTime, WiFiTime;
 char payload[10];
 
 // Static IP details...Use static because it's much faster
-IPAddress ip(192, 168, 178, 199);
+IPAddress ip(192, 168, 178, 200);
 IPAddress gateway(192, 168, 178, 1);
 IPAddress mask(255, 255, 255, 0);
 
@@ -77,9 +77,10 @@ void setup() {
   WiFi.begin(ssid, password);
  
   while (WiFi.status() != WL_CONNECTED) {
+  /* while (WiFi.waitForConnectResult() != WL_CONNECTED) { */
     delay(5);
     /* Serial.print("Connecting to WiFi..Code: "); //serialdebug */
-    rial.print(WiFi.status()); //serialdebug
+    Serial.print(WiFi.status()); //serialdebug
     if ((millis() - WiFiTime) > 5000) {
       Serial.println("Timout wifi connection, going to sleep.."); //serialdebug
       ESP.deepSleepInstant(10*1000000,WAKE_NO_RFCAL);
