@@ -1,3 +1,4 @@
+// TODO: multiple measuerements and get average, try again when > 950
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "credentials.h" //My Wifi and MQTT credentials
@@ -21,7 +22,7 @@ int distance;
 int bat_raw;
 float analog_batt;
 uint32_t measureTime, WiFiTime;
-char payload[14];
+char payload[21];
 
 // Static IP details...Use static because it's much faster
 IPAddress ip(192, 168, 178, 200);
@@ -37,41 +38,56 @@ void setup() {
   /* WiFi.forceSleepBegin(); */
   /* delay( 1 ); */
 
-  Serial.begin(9600); //serialdebug
+  //Serial.begin(9600); //serialdebug
 
-  measureTime = millis(); //serialdebug
+  //measureTime = millis(); //serialdebug
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, HIGH); // Power on devices needed for measurement
   
   /* //JSN SR04T */
-  Serial.println("Starting measurrment"); //serialdebug
+  //Serial.println("Starting measurrment"); //serialdebug
   /* // Clear the trigPin by setting it LOW: */
-  digitalWrite(trigPin, LOW);
-  
-  delayMicroseconds(5);
+  digitalWrite(relayPin, HIGH);
+  for ( int i = 0;;i++)  {
+    //Serial.print("Try: "); //serialdebug
+    //Serial.println(i); //serialdebug
+    digitalWrite(trigPin, LOW);
+    
+    delayMicroseconds(5);
 
- /* // Trigger the sensor by setting the trigPin high for 10 microseconds: */
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  
-  // Read the echoPin. pulseIn() returns the duration (length of the pulse) in microseconds:
-  duration = pulseIn(echoPin, HIGH);
-  bat_raw = analogRead(voltagePin);
-  analog_batt = (3.875/693) * bat_raw;
-  Serial.print("Battery Voltage: "); //serialdebug
-  Serial.println(analog_batt); //serialdebug
+    // Trigger the sensor by setting the trigPin high for 10 microseconds:
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    
+    // Read the echoPin. pulseIn() returns the duration (length of the pulse) in microseconds:
+    duration = pulseIn(echoPin, HIGH);
+    bat_raw = analogRead(voltagePin);
+    //Serial.print("Battery RAW: "); //serialdebug
+    //Serial.println(bat_raw); //serialdebug
+    analog_batt = (3.749/893) * bat_raw;
+    //Serial.print("Battery Voltage: "); //serialdebug
+    //Serial.println(analog_batt); //serialdebug
+    
+    // Calculate the distance:
+    distance = duration*0.034/2;
+
+    //Serial.println(duration); //serialdebug
+    //Serial.print("Distance: "); //serialdebug
+    //Serial.println(distance); //serialdebug
+    delay(10);
+    if ((distance > 5 && distance < 900) || i > 5) {
+      break;
+    }
+  }
   digitalWrite(relayPin, LOW);
-  
-  // Calculate the distance:
-  distance = duration*0.034/2;
-  measureTime = millis() - measureTime; //serialdebug
+  //measureTime = millis() - measureTime; //serialdebug
   /* delay(10); //DELETE ME */
-  Serial.print("Time needed for measurement : "); //serialdebug
-  Serial.println(measureTime); //serialdebug
-  Serial.println("Finished measurrement"); //serialdebug
+  //Serial.print("Time needed for measurement : "); //serialdebug
+  //Serial.println(measureTime); //serialdebug
+  //Serial.println("Finished measurrement"); //serialdebug
  
  
   WiFiTime=millis();
@@ -87,50 +103,52 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
   /* while (WiFi.waitForConnectResult() != WL_CONNECTED) { */
     delay(5);
-    /* Serial.print("Connecting to WiFi..Code: "); //serialdebug */
-    Serial.print(WiFi.status()); //serialdebug
+    ///* Serial.print("Connecting to WiFi..Code: "); //serialdebug */
+    //Serial.print(WiFi.status()); //serialdebug
     if ((millis() - WiFiTime) > 5000) {
-      Serial.println("Timout wifi connection, going to sleep.."); //serialdebug
+      //Serial.println("Timout wifi connection, going to sleep.."); //serialdebug
       ESP.deepSleepInstant(10*1000000,WAKE_NO_RFCAL);
     }
   }
-  WiFiTime = millis() - WiFiTime; //serialdebug
-  Serial.print("Time needed for wifi connection: "); //serialdebug
-  Serial.println(WiFiTime); //serialdebug
-  Serial.println("Connected to the WiFi network"); //serialdebug
+  //WiFiTime = millis() - WiFiTime; //serialdebug
+  //Serial.print("Time needed for wifi connection: "); //serialdebug
+  //Serial.println(WiFiTime); //serialdebug
+  //Serial.println("Connected to the WiFi network"); //serialdebug
  
   client.setServer(mqttServer, mqttPort);
   /* client.setCallback(callback); */
  
   while (!client.connected()) {
-    Serial.println("Connecting to MQTT..."); //serialdebug
+    //Serial.println("Connecting to MQTT..."); //serialdebug
     if (client.connect("ESP8266Client", mqttUser, mqttPassword )) {
-      Serial.println("connected");   //serialdebug
+      //Serial.println("connected");   //serialdebug
     }
     else {
       if (millis() > 10000) {
-        Serial.println("Timout MQTT connection, going to sleep.."); //serialdebug
-        ESP.deepSleepInstant(10*1000000,WAKE_NO_RFCAL);
+        //Serial.println("Timout MQTT connection, going to sleep.."); //serialdebug
+        ESP.deepSleepInstant(30*60*1000000,WAKE_NO_RFCAL);
       }
-      Serial.print("failed with state "); //serialdebug
-      Serial.print(client.state()); //serialdebug
+      //Serial.print("failed with state "); //serialdebug
+      //Serial.print(client.state()); //serialdebug
       delay(5);
     }
   }
  
 
-  Serial.println("now publishing..."); //serialdebug
+  //Serial.println("now publishing..."); //serialdebug
   /* client.publish("zisterne/fuelstand", String(distance).c_str()); */
   sprintf(payload, "%d,%d,%f,%d", distance,bat_raw, analog_batt, millis()); //csv distance and runtime
   client.publish("zisterne/fuelstand", payload);
   /* client.publish("zisterne/fuelstand", "test"); */
   delay(10);
-  Serial.print("Full cycle time: "); //serialdebug
-  Serial.println(millis()); //serialdebug
-  Serial.println("finished, going to sleep.."); //serialdebug
+  //Serial.print("Payload was: "); //serialdebug
+  //Serial.println(payload); //serialdebug
+  //Serial.print("Full cycle time: "); //serialdebug
+  //Serial.println(millis()); //serialdebug
+  //Serial.println("finished, going to sleep.."); //serialdebug
   /* ESP.deepSleep(10e6, WAKE_NO_RFCAL); */
   /* ESP.deepSleep(0); */
-  ESP.deepSleepInstant(10*1000000,WAKE_NO_RFCAL);
+  ESP.deepSleepInstant(30*60*1000000,WAKE_NO_RFCAL);
   /* WiFi.disconnect( true ); */
   /* delay( 1 ); */
 /* // WAKE_RF_DISABLED to keep the WiFi radio disabled when we wake up */
