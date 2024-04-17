@@ -1,6 +1,10 @@
 ##  Project Description: Cistern Water Level Monitoring with Ultrasonic Sensor and ESP12
 
 The primary objective of this project is to monitor the water level in a cistern using an ultrasonic sensor paired with an ESP12 microcontroller.
+![cistern_front](https://github.com/BernH4/zisterne_fuellstand/assets/62931413/e3ae206f-5531-4258-8387-0702109ab64e)
+![cistern_back](https://github.com/BernH4/zisterne_fuellstand/assets/62931413/db42e475-7c8c-4c78-ae60-4af6ff03703c)
+
+(Yes my soldering skills are ...)
 
 ### Challenges and Solutions:
 
