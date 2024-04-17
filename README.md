@@ -5,8 +5,10 @@ Software Stack: ESP12 sends measurements via MQTT to a NodeRed instance wich sto
 
 ![cistern_front](https://github.com/BernH4/zisterne_fuellstand/assets/62931413/9714ec93-edf1-4a56-9ecc-701ef56a02d0)
 ![cistern_back](https://github.com/BernH4/zisterne_fuellstand/assets/62931413/db42e475-7c8c-4c78-ae60-4af6ff03703c)
+![Screenshot from 2024-02-12 14-21-09](https://github.com/BernH4/zisterne_fuellstand/assets/62931413/90733856-0585-47d8-9df9-1798ab5af6c6)
 
 (Yes my soldering skills are ...)
+
 
 ### Challenges and Solutions:
 
